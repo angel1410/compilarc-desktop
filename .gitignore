@@ -1,0 +1,24 @@
+# Binarios compilados
+compilarc-desktop
+compilarc-desktop.exe
+build/bin/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Bases de datos SQLite locales (se autogeneran y siembran al ejecutar)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+*.db
+*.db-wal
+*.db-shm
+
+# Logs y temporales
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
