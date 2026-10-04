@@ -18,6 +18,9 @@ data/*.db-shm
 
 # Logs y temporales
 *.log
+*.zip
+dist_windows/
+CompilaRC-Desktop-Windows/
 .DS_Store
 Thumbs.db
 .idea/
