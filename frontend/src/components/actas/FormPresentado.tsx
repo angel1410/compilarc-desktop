@@ -3,9 +3,8 @@ import type { DatosPresentado } from '../../types/actas';
 import { InputField } from '../ui/InputField';
 import {
   ESTADOS_VENEZUELA,
-  CENTROS_SALUD_POR_ESTADO,
-  CENTROS_SALUD_GENERALES,
-  PAISES_CATALOGO
+  PAISES_CATALOGO,
+  obtenerCentrosSaludPorUbicacion,
 } from '../../data/catalogoGeo';
 import { Baby, MapPin } from 'lucide-react';
 
@@ -43,8 +42,12 @@ export const FormPresentado: React.FC<Props> = ({
   const municipioSeleccionado = municipiosDisponibles.find(m => String(m.nu_geografico) === String(municipioIdActual));
   const parroquiasDisponibles = municipioSeleccionado?.parroquias || [];
 
-  // Centros de salud correspondientes al estado
-  const listaCentrosSalud = CENTROS_SALUD_POR_ESTADO[estadoIdActual] || CENTROS_SALUD_GENERALES;
+  // Centros de salud clasificados por parroquia y estado
+  const { centrosParroquia, otrosCentros } = obtenerCentrosSaludPorUbicacion(
+    estadoIdActual,
+    datos.parroquia || datos.parroquia_id
+  );
+  const listaCentrosSalud = [...centrosParroquia, ...otrosCentros];
 
   const [esOtroCentro, setEsOtroCentro] = useState<boolean>(() => {
     return Boolean(datos.centro_salud && !listaCentrosSalud.includes(datos.centro_salud.toUpperCase()));
@@ -117,6 +120,17 @@ export const FormPresentado: React.FC<Props> = ({
     const val = e.target.value;
     onChange({ target: { name: 'parroquia_id', value: val } } as any);
     onChange({ target: { name: 'parroquia', value: val } } as any);
+
+    // Al seleccionar una parroquia, si tiene un centro de salud específico (ej. Macuto -> Hospital Materno Infantil),
+    // preseleccionarlo automáticamente para mayor agilidad del operador
+    const { centrosParroquia: centrosFiltrados } = obtenerCentrosSaludPorUbicacion(
+      estadoIdActual,
+      val
+    );
+    if (centrosFiltrados.length > 0) {
+      onChange({ target: { name: 'centro_salud', value: centrosFiltrados[0] } } as any);
+      setEsOtroCentro(false);
+    }
   };
 
   const handleSelectCentro = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -320,10 +334,15 @@ export const FormPresentado: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Centro de Salud Filtrado según Estado */}
+          {/* Centro de Salud Filtrado según Estado y Parroquia */}
           <div className="space-y-1.5 pt-1">
-            <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-              Centro de Salud de Nacimiento
+            <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center justify-between">
+              <span>Centro de Salud de Nacimiento</span>
+              {datos.parroquia && centrosParroquia.length > 0 && (
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  Parroquia {datos.parroquia} ({centrosParroquia.length})
+                </span>
+              )}
             </label>
             <select
               value={esOtroCentro ? 'OTRO' : (datos.centro_salud || '')}
@@ -331,9 +350,20 @@ export const FormPresentado: React.FC<Props> = ({
               className="w-full border border-slate-300 bg-white rounded-lg p-2 text-xs font-semibold uppercase cursor-pointer"
             >
               <option value="">-- SELECCIONE CENTRO DE SALUD --</option>
-              {listaCentrosSalud.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+              {centrosParroquia.length > 0 && (
+                <optgroup label={`🏥 CENTROS EN PARROQUIA ${datos.parroquia || ''} (${centrosParroquia.length})`}>
+                  {centrosParroquia.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </optgroup>
+              )}
+              {otrosCentros.length > 0 && (
+                <optgroup label={centrosParroquia.length > 0 ? "🏛️ OTROS CENTROS DEL ESTADO" : "🏥 CENTROS DE SALUD DISPONIBLES"}>
+                  {otrosCentros.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </optgroup>
+              )}
               <option value="OTRO">OTRO / CENTRO PERSONALIZADO</option>
             </select>
 

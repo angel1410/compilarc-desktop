@@ -238,6 +238,146 @@ export const CENTROS_SALUD_GENERALES = [
   "PARTO EN DOMICILIO / COMUNITARIO"
 ];
 
+// Centros de salud agrupados por Parroquia (nombre normalizado o ID numérico)
+export const CENTROS_SALUD_POR_PARROQUIA: Record<string, string[]> = {
+  // --- EDO. LA GUAIRA (1490) ---
+  'MACUTO': [
+    "HOSPITAL MATERNO INFANTIL ANA TERESA DE JESÚS PONCE (MACUTO)",
+    "AMBULATORIO DE MACUTO"
+  ],
+  '1497': [
+    "HOSPITAL MATERNO INFANTIL ANA TERESA DE JESÚS PONCE (MACUTO)",
+    "AMBULATORIO DE MACUTO"
+  ],
+  'LA GUAIRA': [
+    "HOSPITAL DR. JOSÉ MARÍA VARGAS (LA GUAIRA)",
+    "CLÍNICA SAN JOSÉ (LA GUAIRA)",
+    "AMBULATORIO DE LA GUAIRA"
+  ],
+  '1496': [
+    "HOSPITAL DR. JOSÉ MARÍA VARGAS (LA GUAIRA)",
+    "CLÍNICA SAN JOSÉ (LA GUAIRA)",
+    "AMBULATORIO DE LA GUAIRA"
+  ],
+  'MAIQUETIA': [
+    "CENTRO INTEGRAL DE SALUD DE MAIQUETÍA",
+    "CLÍNICA ALFA (MAIQUETÍA)",
+    "HOSPITAL DR. RAFAEL MEDINA JIMÉNEZ (PERIFÉRICO DE PARIATA)",
+    "AMBULATORIO DE MAIQUETÍA"
+  ],
+  '1498': [
+    "CENTRO INTEGRAL DE SALUD DE MAIQUETÍA",
+    "CLÍNICA ALFA (MAIQUETÍA)",
+    "HOSPITAL DR. RAFAEL MEDINA JIMÉNEZ (PERIFÉRICO DE PARIATA)",
+    "AMBULATORIO DE MAIQUETÍA"
+  ],
+  'CARABALLEDA': [
+    "AMBULATORIO DE CARABALLEDA"
+  ],
+  '1492': [
+    "AMBULATORIO DE CARABALLEDA"
+  ],
+  'CATIA LA MAR': [
+    "AMBULATORIO DE CATIA LA MAR"
+  ],
+  '1495': [
+    "AMBULATORIO DE CATIA LA MAR"
+  ],
+  'NAIGUATA': [
+    "AMBULATORIO DE NAIGUATÁ"
+  ],
+  '1499': [
+    "AMBULATORIO DE NAIGUATÁ"
+  ],
+  'CARAYACA': [
+    "MATERNIDAD DE CARAYACA",
+    "AMBULATORIO DE CARAYACA"
+  ],
+  '1493': [
+    "MATERNIDAD DE CARAYACA",
+    "AMBULATORIO DE CARAYACA"
+  ],
+  'CARUAO': [
+    "AMBULATORIO DE CARUAO (CHUSPA)"
+  ],
+  '1494': [
+    "AMBULATORIO DE CARUAO (CHUSPA)"
+  ],
+  'EL JUNKO': [
+    "AMBULATORIO DE EL JUNKO"
+  ],
+  '1500': [
+    "AMBULATORIO DE EL JUNKO"
+  ],
+  'URIMARE': [
+    "AMBULATORIO DE URIMARE"
+  ],
+  '1501': [
+    "AMBULATORIO DE URIMARE"
+  ],
+  'CARLOS SOUBLETTE': [
+    "AMBULATORIO DE CARLOS SOUBLETTE"
+  ],
+  '1502': [
+    "AMBULATORIO DE CARLOS SOUBLETTE"
+  ],
+
+  // --- DTTO. CAPITAL (2) ---
+  'SAN JUAN': [
+    "MATERNIDAD CONCEPCIÓN PALACIOS",
+    "HOSPITAL MILITAR DR. CARLOS ARVELO"
+  ],
+  'SAN PEDRO': [
+    "HOSPITAL UNIVERSITARIO DE CARACAS (HUC)"
+  ],
+  'SAN JOSE': [
+    "HOSPITAL DR. JOSÉ MARÍA VARGAS (CARACAS)"
+  ],
+  'ANTIMANO': [
+    "HOSPITAL DR. JOSÉ IGNACIO BALDÓ (EL ALGODONAL)"
+  ],
+  'LA VEGA': [
+    "HOSPITAL DR. MIGUEL PÉREZ CARREÑO"
+  ],
+  'EL VALLE': [
+    "HOSPITAL MATERNO INFANTIL HUGO CHÁVEZ (EL VALLE)"
+  ],
+  'CARICUAO': [
+    "HOSPITAL MATERNO INFANTIL CARICUAO"
+  ],
+  'SAN BERNARDINO': [
+    "HOSPITAL DE CLÍNICAS CARACAS"
+  ]
+};
+
+// Helper para clasificar y priorizar centros de salud según la parroquia seleccionada
+export function obtenerCentrosSaludPorUbicacion(
+  estadoId: string,
+  parroquiaIdONombre?: string
+): { centrosParroquia: string[]; otrosCentros: string[] } {
+  const listaEstado = CENTROS_SALUD_POR_ESTADO[estadoId] || CENTROS_SALUD_GENERALES;
+  const parNorm = normalizarTexto(parroquiaIdONombre || '');
+
+  if (!parNorm) {
+    return { centrosParroquia: [], otrosCentros: listaEstado };
+  }
+
+  // 1. Buscar en el mapa por nombre normalizado (sin acentos) o ID directo
+  let centrosParroquia = CENTROS_SALUD_POR_PARROQUIA[parNorm] || [];
+  if (centrosParroquia.length === 0 && parroquiaIdONombre) {
+    centrosParroquia = CENTROS_SALUD_POR_PARROQUIA[String(parroquiaIdONombre).trim()] || [];
+  }
+
+  // 2. Si no está en el mapa, buscar por inclusión de texto en el nombre del centro
+  if (centrosParroquia.length === 0) {
+    centrosParroquia = listaEstado.filter((c) => normalizarTexto(c).includes(parNorm));
+  }
+
+  // 3. Los demás centros del estado (para que nunca se quede sin opciones)
+  const otrosCentros = listaEstado.filter((c) => !centrosParroquia.includes(c));
+  return { centrosParroquia, otrosCentros };
+}
+
 export const PAISES_CATALOGO = [
   "VENEZUELA",
   "COLOMBIA",
