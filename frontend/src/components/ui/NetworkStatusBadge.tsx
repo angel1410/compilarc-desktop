@@ -196,6 +196,8 @@ export const NetworkStatusBadge: React.FC<NetworkStatusBadgeProps> = ({
                   ? '📶 Inalámbrica (Wi-Fi)'
                   : estadoRed.tipo_conexion === 'CELULAR'
                   ? '📱 Móvil / 4G'
+                  : estadoRed.tipo_conexion === 'OTRO'
+                  ? '🌐 Red Virtual / VPN'
                   : 'Desconectado'}
               </span>
             </div>

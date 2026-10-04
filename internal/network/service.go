@@ -149,8 +149,8 @@ func (s *NetworkService) VerificarEstado() EstadoRed {
 
 // probarConectividadExterna intenta abrir un socket TCP a servidores DNS públicos ultra-rápidos
 func probarConectividadExterna() (bool, int64) {
-	destinos := []string{"1.1.1.1:53", "8.8.8.8:53"}
-	timeout := 750 * time.Millisecond
+	destinos := []string{"1.1.1.1:53", "8.8.8.8:53", "1.0.0.1:53"}
+	timeout := 1200 * time.Millisecond
 
 	for _, d := range destinos {
 		start := time.Now()

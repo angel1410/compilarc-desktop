@@ -118,12 +118,21 @@ func detectarInterfazActiva() (tipo TipoConexion, nombre string, ipLocal string,
 		})
 	}
 
-	if len(candidatos) == 0 {
-		return ConexionNinguna, "", "", ""
+	// Si hay adaptadores físicos reales (Ethernet o Wi-Fi), descartar interfaces virtuales (VPN/Docker/Tailscale)
+	var fisicos []Candidato
+	for _, c := range candidatos {
+		if c.prioridad < 5 {
+			fisicos = append(fisicos, c)
+		}
 	}
 
-	mejor := candidatos[0]
-	for _, c := range candidatos[1:] {
+	evaluar := candidatos
+	if len(fisicos) > 0 {
+		evaluar = fisicos
+	}
+
+	mejor := evaluar[0]
+	for _, c := range evaluar[1:] {
 		if c.prioridad < mejor.prioridad {
 			mejor = c
 		} else if c.prioridad == mejor.prioridad && c.gateway != "" && mejor.gateway == "" {

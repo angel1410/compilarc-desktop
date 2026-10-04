@@ -136,9 +136,22 @@ func detectarInterfazActiva() (tipo TipoConexion, nombre string, ipLocal string,
 		return ConexionNinguna, "", "", ""
 	}
 
+	// Si hay adaptadores físicos reales, descartar los virtuales
+	var fisicos []Candidato
+	for _, c := range candidatos {
+		if c.prioridad < 5 {
+			fisicos = append(fisicos, c)
+		}
+	}
+
+	evaluar := candidatos
+	if len(fisicos) > 0 {
+		evaluar = fisicos
+	}
+
 	// Seleccionar el mejor candidato (menor valor de prioridad)
-	mejor := candidatos[0]
-	for _, c := range candidatos[1:] {
+	mejor := evaluar[0]
+	for _, c := range evaluar[1:] {
 		if c.prioridad < mejor.prioridad {
 			mejor = c
 		} else if c.prioridad == mejor.prioridad && c.gateway != "" && mejor.gateway == "" {
