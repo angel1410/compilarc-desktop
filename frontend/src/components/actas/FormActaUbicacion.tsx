@@ -96,6 +96,30 @@ export const FormActaUbicacion: React.FC<Props> = ({
     } as any);
   };
 
+  const handleParroquiaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nuevaParroquia = e.target.value;
+    onChangeOficina(e);
+
+    // Calcular las oficinas filtradas con la nueva parroquia de inmediato
+    const filtradas = filtrarOficinasCascada(
+      oficina.estado_id,
+      oficina.municipio_id,
+      nuevaParroquia
+    );
+
+    // Si la oficina seleccionada previamente no pertenece a la nueva parroquia, auto-seleccionar la primera
+    if (filtradas.length > 0) {
+      const existe = filtradas.some(
+        (o) => String(o.co_oficina) === String(oficina.ourc_id)
+      );
+      if (!existe) {
+        onChangeOficina({
+          target: { name: 'ourc_id', value: String(filtradas[0].co_oficina) },
+        } as any);
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* 1. Datos del Registro del Acta */}
@@ -243,7 +267,7 @@ export const FormActaUbicacion: React.FC<Props> = ({
             <SelectField
               name="parroquia_id"
               value={oficina.parroquia_id}
-              onChange={onChangeOficina}
+              onChange={handleParroquiaChange}
             >
               <option value="">-- Todas las Parroquias (Sin filtrar) --</option>
               {parroquiasDisponibles.map((p) => (
@@ -257,7 +281,10 @@ export const FormActaUbicacion: React.FC<Props> = ({
           {/* Oficina Registral (OURC) */}
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-              Oficina Registral (OURC) <span className="text-red-500">*</span>
+              Oficina Registral (OURC) <span className="text-red-500">*</span>{' '}
+              <span className="text-blue-700 font-mono text-[10px] font-bold">
+                ({oficinasDisponibles.length} disponible{oficinasDisponibles.length === 1 ? '' : 's'})
+              </span>
             </label>
             <SelectField
               name="ourc_id"

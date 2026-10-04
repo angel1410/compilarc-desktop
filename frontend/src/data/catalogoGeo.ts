@@ -493,30 +493,77 @@ export const CATALOGO_OURCS: OficinaRegistral[] = [
   }
 ];
 
+// Helper para normalizar texto eliminando acentos, diacríticos y espacios sobrantes
+export function normalizarTexto(texto: string): string {
+  return (texto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase();
+}
+
 // Helper para filtrar oficinas en cascada: Estado -> Municipio -> Parroquia (opcional)
 export function filtrarOficinasCascada(
   nuEstado: number | string,
   nuMunicipio?: number | string,
-  nbParroquia?: string
+  parroquiaIdONombre?: number | string
 ): OficinaRegistral[] {
   const estNum = Number(nuEstado);
   const munNum = nuMunicipio ? Number(nuMunicipio) : null;
-  const parNom = (nbParroquia || '').trim().toUpperCase();
+  const parFiltro = String(parroquiaIdONombre || '').trim();
 
-  let oficinas = CATALOGO_OURCS.filter(o => o.nu_estado === estNum);
+  let oficinas = CATALOGO_OURCS.filter((o) => o.nu_estado === estNum);
 
-  if (munNum && oficinas.some(o => o.nu_municipio === munNum)) {
-    oficinas = oficinas.filter(o => o.nu_municipio === munNum);
+  if (munNum && oficinas.some((o) => o.nu_municipio === munNum)) {
+    oficinas = oficinas.filter((o) => o.nu_municipio === munNum);
   }
 
-  // Si se seleccionó una parroquia específica, filtrar para mostrar solo las de esa parroquia
-  if (parNom) {
-    const oficinasParroquia = oficinas.filter(
-      o => o.nb_parroquia && (o.nb_parroquia.toUpperCase() === parNom || o.nb_oficina.toUpperCase().includes(parNom))
-    );
-    if (oficinasParroquia.length > 0) {
-      return oficinasParroquia;
+  // Si se seleccionó una parroquia específica, filtrar OBLIGATORIAMENTE
+  if (parFiltro) {
+    const parNorm = normalizarTexto(parFiltro);
+    const parNum = Number(parFiltro);
+
+    const filtradas = oficinas.filter((o) => {
+      // 1. Por ID numérico de parroquia (ej. 1492)
+      if (!isNaN(parNum) && o.nu_parroquia && o.nu_parroquia === parNum) {
+        return true;
+      }
+      // 2. Por coincidencia exacta normalizada de nombre de parroquia
+      if (o.nb_parroquia && normalizarTexto(o.nb_parroquia) === parNorm) {
+        return true;
+      }
+      // 3. Por inclusión en el nombre de la parroquia o de la oficina
+      if (
+        o.nb_parroquia &&
+        (normalizarTexto(o.nb_parroquia).includes(parNorm) ||
+          parNorm.includes(normalizarTexto(o.nb_parroquia)))
+      ) {
+        return true;
+      }
+      if (o.nb_oficina && normalizarTexto(o.nb_oficina).includes(parNorm)) {
+        return true;
+      }
+      return false;
+    });
+
+    // Si existen oficinas registradas para esa parroquia, devolver ÚNICAMENTE esas oficinas
+    if (filtradas.length > 0) {
+      return filtradas;
     }
+
+    // Si la parroquia seleccionada no tiene oficinas específicas en la base,
+    // devolver una oficina de dicha parroquia; ¡NUNCA devolver toda la lista del municipio!
+    return [
+      {
+        co_oficina: `PAR-${parFiltro}`,
+        co_ourc: `CIVIS-${parFiltro}`,
+        nb_oficina: `URC PARROQUIA ${parFiltro.toUpperCase()}`,
+        nu_estado: estNum,
+        nu_municipio: munNum || 1,
+        nb_parroquia: parFiltro.toUpperCase(),
+        nu_parroquia: !isNaN(parNum) ? parNum : undefined,
+      },
+    ];
   }
 
   // Si no hay oficinas registradas para ese estado, proveer una oficina genérica
@@ -527,8 +574,8 @@ export function filtrarOficinasCascada(
         co_ourc: `GEN-${estNum}01A01`,
         nb_oficina: `UNIDAD DE REGISTRO CIVIL MUNICIPAL`,
         nu_estado: estNum,
-        nu_municipio: munNum || 1
-      }
+        nu_municipio: munNum || 1,
+      },
     ];
   }
 
