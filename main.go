@@ -6,11 +6,15 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+//go:embed build/appicon.png
+var appIcon []byte
 
 func main() {
 	// Create an instance of the app structure
@@ -30,6 +34,10 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+		},
+		Linux: &linux.Options{
+			Icon:        appIcon,
+			ProgramName: "compilarc-desktop",
 		},
 		Windows: &windows.Options{
 			WebviewIsTransparent: false,
