@@ -62,13 +62,28 @@ func detectarInterfazActiva() (tipo TipoConexion, nombre string, ipLocal string,
 		}
 
 		nombreLower := strings.ToLower(iface.Name)
-		esVirtual := strings.Contains(nombreLower, "docker") ||
+
+		// En Linux, todos los adaptadores físicos reales (Ethernet, Wi-Fi, USB NIC)
+		// poseen un enlace 'device' en sysfs (/sys/class/net/<name>/device).
+		// Las interfaces virtuales (tailscale, tun, tap, docker, veth, wireguard) NO tienen device.
+		_, errDevice := os.Stat(filepath.Join("/sys/class/net", iface.Name, "device"))
+		esHardware := errDevice == nil
+
+		esVirtual := !esHardware ||
+			strings.Contains(nombreLower, "docker") ||
 			strings.Contains(nombreLower, "veth") ||
 			strings.Contains(nombreLower, "virbr") ||
 			strings.Contains(nombreLower, "tailscale") ||
 			strings.Contains(nombreLower, "tun") ||
 			strings.Contains(nombreLower, "tap") ||
-			strings.Contains(nombreLower, "br-")
+			strings.Contains(nombreLower, "br-") ||
+			strings.Contains(nombreLower, "wg") ||
+			strings.Contains(nombreLower, "dummy")
+
+		// Descartar adaptadores virtuales: una VPN o túnel no garantiza conexión física
+		if esVirtual {
+			continue
+		}
 
 		// Verificar si es Wi-Fi: /sys/class/net/<name>/wireless o phy80211 o prefijo wl
 		esWifi := false
@@ -83,28 +98,17 @@ func detectarInterfazActiva() (tipo TipoConexion, nombre string, ipLocal string,
 		}
 
 		var t TipoConexion
-		prio := 4
+		prio := 3
 
 		if esWifi {
 			t = ConexionInalambrica
-			if esVirtual {
-				prio = 5
-			} else {
-				prio = 2
-			}
+			prio = 2
 		} else if strings.HasPrefix(nombreLower, "eth") || strings.HasPrefix(nombreLower, "en") {
 			t = ConexionCableada
-			if esVirtual {
-				prio = 5
-			} else {
-				prio = 1
-			}
+			prio = 1
 		} else {
-			t = ConexionOtro
-			prio = 4
-			if esVirtual {
-				prio = 5
-			}
+			t = ConexionCableada
+			prio = 3
 		}
 
 		gw := gateways[iface.Name]
@@ -118,21 +122,12 @@ func detectarInterfazActiva() (tipo TipoConexion, nombre string, ipLocal string,
 		})
 	}
 
-	// Si hay adaptadores físicos reales (Ethernet o Wi-Fi), descartar interfaces virtuales (VPN/Docker/Tailscale)
-	var fisicos []Candidato
-	for _, c := range candidatos {
-		if c.prioridad < 5 {
-			fisicos = append(fisicos, c)
-		}
+	if len(candidatos) == 0 {
+		return ConexionNinguna, "", "", ""
 	}
 
-	evaluar := candidatos
-	if len(fisicos) > 0 {
-		evaluar = fisicos
-	}
-
-	mejor := evaluar[0]
-	for _, c := range evaluar[1:] {
+	mejor := candidatos[0]
+	for _, c := range candidatos[1:] {
 		if c.prioridad < mejor.prioridad {
 			mejor = c
 		} else if c.prioridad == mejor.prioridad && c.gateway != "" && mejor.gateway == "" {
