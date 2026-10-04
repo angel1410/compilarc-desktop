@@ -38,12 +38,14 @@ import {
 import type {
   DatosSolicitante,
   DatosActa,
+  DatosOficina,
   DatosMadre,
   DatosPadre,
   DatosPresentado,
   DatosConyugues,
   DatosFallecido
 } from './types/actas';
+import { CATALOGO_OURCS } from './data/catalogoGeo';
 
 // Configuración visual oficial de trámites idéntica al Dashboard de CompilaRC
 export const TRAMITES_CONFIG = {
@@ -256,6 +258,13 @@ export default function App() {
     tomo: '',
     folio: '',
     co_acta: '',
+  });
+
+  const [datosOficina, setDatosOficina] = useState<DatosOficina>({
+    estado_id: '1490',
+    municipio_id: '1491',
+    parroquia_id: '',
+    ourc_id: '1',
   });
 
   // Estados de Errores Inline
@@ -746,6 +755,14 @@ export default function App() {
     setDatosActa((prev) => ({ ...prev, [name]: value.toUpperCase() }));
   };
 
+  const handleOficinaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setDatosOficina((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleCambioTipoActa = (nuevo: 'NACIMIENTO' | 'MATRIMONIO' | 'DEFUNCION' | 'UNION_ESTABLE') => {
     setTipoActa(nuevo);
     setParentesco('');
@@ -851,6 +868,12 @@ export default function App() {
       tomo: '',
       folio: '',
       co_acta: '',
+    });
+    setDatosOficina({
+      estado_id: '1490',
+      municipio_id: '1491',
+      parroquia_id: '',
+      ourc_id: '1',
     });
   };
 
@@ -1013,6 +1036,16 @@ export default function App() {
       }
     }
 
+    if (!datosOficina.estado_id) {
+      errAct.estado_id = 'El Estado es obligatorio.';
+      hayErrores = true;
+    }
+
+    if (!datosOficina.ourc_id) {
+      errAct.ourc_id = 'La Oficina de Registro Civil (OURC) es obligatoria.';
+      hayErrores = true;
+    }
+
     setErroresSolicitante(errSol);
     setErroresMadre(errMad);
     setErroresPresentado(errPres);
@@ -1035,8 +1068,15 @@ export default function App() {
     setMensajeExito(null);
 
     // Armar el payload estructurado completo
+    const oficinaObj = CATALOGO_OURCS.find((o) => String(o.co_oficina) === String(datosOficina.ourc_id));
     const payloadActaData: any = {
       ...datosActa,
+      oficina: {
+        ...datosOficina,
+        co_ourc: oficinaObj?.co_ourc || '',
+        nb_oficina: oficinaObj?.nb_oficina || '',
+        nb_parroquia: oficinaObj?.nb_parroquia || '',
+      },
       parentesco: parentesco,
       parentesco_otro: parentescoOtro,
     };
@@ -1450,9 +1490,11 @@ export default function App() {
                 </div>
                 <FormActaUbicacion
                   datos={datosActa}
+                  oficina={datosOficina}
                   errores={erroresActa}
                   tipoActa={tipoActa}
-                  onChange={handleActaChange}
+                  onChangeActa={handleActaChange}
+                  onChangeOficina={handleOficinaChange}
                 />
               </div>
 
@@ -1629,13 +1671,34 @@ export default function App() {
                         </td>
                         <td className="py-3 px-4">
                           {sol.tipo_acta === 'NACIMIENTO' && sol.datos_acta?.presentado?.primer_nombre && (
-                            <span>Presentado: {sol.datos_acta.presentado.primer_nombre} {sol.datos_acta.presentado.primer_apellido}</span>
+                            <div>
+                              <div>Presentado: <strong>{sol.datos_acta.presentado.primer_nombre} {sol.datos_acta.presentado.primer_apellido}</strong></div>
+                              {sol.datos_acta?.oficina?.co_ourc && (
+                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                  OURC: {sol.datos_acta.oficina.co_ourc} ({sol.datos_acta.oficina.nb_oficina})
+                                </div>
+                              )}
+                            </div>
                           )}
                           {(sol.tipo_acta === 'MATRIMONIO' || sol.tipo_acta === 'UNION_ESTABLE') && (
-                            <span>Cónyuges: {sol.datos_acta?.conyugues?.primer_nombre_ella} y {sol.datos_acta?.conyugues?.primer_nombre_el}</span>
+                            <div>
+                              <div>Cónyuges: <strong>{sol.datos_acta?.conyugues?.primer_nombre_ella}</strong> y <strong>{sol.datos_acta?.conyugues?.primer_nombre_el}</strong></div>
+                              {sol.datos_acta?.oficina?.co_ourc && (
+                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                  OURC: {sol.datos_acta.oficina.co_ourc} ({sol.datos_acta.oficina.nb_oficina})
+                                </div>
+                              )}
+                            </div>
                           )}
                           {sol.tipo_acta === 'DEFUNCION' && sol.datos_acta?.fallecido?.primer_nombre && (
-                            <span>Fallecido: {sol.datos_acta.fallecido.primer_nombre} {sol.datos_acta.fallecido.primer_apellido}</span>
+                            <div>
+                              <div>Fallecido: <strong>{sol.datos_acta.fallecido.primer_nombre} {sol.datos_acta.fallecido.primer_apellido}</strong></div>
+                              {sol.datos_acta?.oficina?.co_ourc && (
+                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                  OURC: {sol.datos_acta.oficina.co_ourc} ({sol.datos_acta.oficina.nb_oficina})
+                                </div>
+                              )}
+                            </div>
                           )}
                         </td>
                         <td className="py-3 px-4">

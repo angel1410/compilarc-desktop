@@ -261,3 +261,277 @@ export const PAISES_CATALOGO = [
   "CHINA",
   "OTRO PAÍS"
 ];
+
+export interface OficinaRegistral {
+  co_oficina: string;
+  co_ourc: string;     // Código CIVIS oficial (ej. 240101B01)
+  nb_oficina: string;  // Nombre de la oficina
+  nu_estado: number;
+  nu_municipio: number;
+  nb_parroquia?: string;
+  nu_parroquia?: number;
+}
+
+export const CATALOGO_OURCS: OficinaRegistral[] = [
+  // --- EDO. LA GUAIRA (1490), MP. VARGAS (1491) - CÓDIGOS OFICIALES CIVIS ---
+  {
+    co_oficina: "1",
+    co_ourc: "240101B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL CARABALLEDA",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "CARABALLEDA",
+    nu_parroquia: 1492
+  },
+  {
+    co_oficina: "2",
+    co_ourc: "240102B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL CARAYACA",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "CARAYACA",
+    nu_parroquia: 1493
+  },
+  {
+    co_oficina: "3",
+    co_ourc: "240103B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL PARROQUIAL CARUAO",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "CARUAO",
+    nu_parroquia: 1494
+  },
+  {
+    co_oficina: "4",
+    co_ourc: "240104B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL CATIA LA MAR",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "CATIA LA MAR",
+    nu_parroquia: 1495
+  },
+  {
+    co_oficina: "5",
+    co_ourc: "240105B01",
+    nb_oficina: "URC HOSP. DR. JOSÉ MARÍA VARGAS (LA GUAIRA)",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "LA GUAIRA",
+    nu_parroquia: 1496
+  },
+  {
+    co_oficina: "6",
+    co_ourc: "240107A01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL LA GUAIRA",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "LA GUAIRA",
+    nu_parroquia: 1496
+  },
+  {
+    co_oficina: "7",
+    co_ourc: "240106B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL MACUTO",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "MACUTO",
+    nu_parroquia: 1497
+  },
+  {
+    co_oficina: "8",
+    co_ourc: "240106C02",
+    nb_oficina: "URC HOSP. MATERNO INFANTIL ANA TERESA DE JESÚS PONCE (MACUTO)",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "MACUTO",
+    nu_parroquia: 1497
+  },
+  {
+    co_oficina: "9",
+    co_ourc: "240107A02",
+    nb_oficina: "OFICINA DE REGISTRO CIVIL MAIQUETÍA",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "MAIQUETÍA",
+    nu_parroquia: 1498
+  },
+  {
+    co_oficina: "10",
+    co_ourc: "240108B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL NAIGUATÁ",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "NAIGUATÁ",
+    nu_parroquia: 1499
+  },
+  {
+    co_oficina: "11",
+    co_ourc: "240109B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL EL JUNKO",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "EL JUNKO",
+    nu_parroquia: 1500
+  },
+  {
+    co_oficina: "12",
+    co_ourc: "240110B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL URIMARE",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "URIMARE",
+    nu_parroquia: 1501
+  },
+  {
+    co_oficina: "13",
+    co_ourc: "240111B01",
+    nb_oficina: "UNIDAD DE REGISTRO CIVIL CARLOS SOUBLETTE",
+    nu_estado: 1490,
+    nu_municipio: 1491,
+    nb_parroquia: "CARLOS SOUBLETTE",
+    nu_parroquia: 1502
+  },
+
+  // --- DISTRITO CAPITAL (2), MP. LIBERTADOR (3) ---
+  {
+    co_oficina: "101",
+    co_ourc: "010101A01",
+    nb_oficina: "URC PARROQUIA CATEDRAL",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "CATEDRAL"
+  },
+  {
+    co_oficina: "102",
+    co_ourc: "010102A01",
+    nb_oficina: "URC PARROQUIA ALTAGRACIA",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "ALTAGRACIA"
+  },
+  {
+    co_oficina: "103",
+    co_ourc: "010109A01",
+    nb_oficina: "URC PARROQUIA SUCRE (CATIA)",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "SUCRE (CATIA)"
+  },
+  {
+    co_oficina: "104",
+    co_ourc: "010112A01",
+    nb_oficina: "URC PARROQUIA EL VALLE",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "EL VALLE"
+  },
+  {
+    co_oficina: "105",
+    co_ourc: "010113A01",
+    nb_oficina: "URC PARROQUIA CARICUAO",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "CARICUAO"
+  },
+  {
+    co_oficina: "106",
+    co_ourc: "010114A01",
+    nb_oficina: "URC PARROQUIA EL RECREO",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "EL RECREO"
+  },
+  {
+    co_oficina: "107",
+    co_ourc: "010116A01",
+    nb_oficina: "URC PARROQUIA SAN PEDRO",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "SAN PEDRO"
+  },
+  {
+    co_oficina: "108",
+    co_ourc: "010120A01",
+    nb_oficina: "URC PARROQUIA EL PARAÍSO",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "EL PARAÍSO"
+  },
+  {
+    co_oficina: "109",
+    co_ourc: "010103A01",
+    nb_oficina: "URC MATERNIDAD CONCEPCIÓN PALACIOS (SAN JUAN)",
+    nu_estado: 2,
+    nu_municipio: 3,
+    nb_parroquia: "SAN JUAN"
+  },
+
+  // --- EDO. MIRANDA (752) ---
+  {
+    co_oficina: "201",
+    co_ourc: "150101A01",
+    nb_oficina: "URC MUNICIPIO GUAICAIPURO (LOS TEQUES)",
+    nu_estado: 752,
+    nu_municipio: 753,
+    nb_parroquia: "LOS TEQUES"
+  },
+  {
+    co_oficina: "202",
+    co_ourc: "150201A01",
+    nb_oficina: "URC MUNICIPIO SUCRE (PETARE)",
+    nu_estado: 752,
+    nu_municipio: 753,
+    nb_parroquia: "PETARE"
+  },
+  {
+    co_oficina: "203",
+    co_ourc: "150301A01",
+    nb_oficina: "URC MUNICIPIO CHACAO",
+    nu_estado: 752,
+    nu_municipio: 753,
+    nb_parroquia: "CHACAO"
+  }
+];
+
+// Helper para filtrar oficinas en cascada: Estado -> Municipio -> Parroquia (opcional)
+export function filtrarOficinasCascada(
+  nuEstado: number | string,
+  nuMunicipio?: number | string,
+  nbParroquia?: string
+): OficinaRegistral[] {
+  const estNum = Number(nuEstado);
+  const munNum = nuMunicipio ? Number(nuMunicipio) : null;
+  const parNom = (nbParroquia || '').trim().toUpperCase();
+
+  let oficinas = CATALOGO_OURCS.filter(o => o.nu_estado === estNum);
+
+  if (munNum && oficinas.some(o => o.nu_municipio === munNum)) {
+    oficinas = oficinas.filter(o => o.nu_municipio === munNum);
+  }
+
+  // Si se seleccionó una parroquia específica, filtrar para mostrar solo las de esa parroquia
+  if (parNom) {
+    const oficinasParroquia = oficinas.filter(
+      o => o.nb_parroquia && (o.nb_parroquia.toUpperCase() === parNom || o.nb_oficina.toUpperCase().includes(parNom))
+    );
+    if (oficinasParroquia.length > 0) {
+      return oficinasParroquia;
+    }
+  }
+
+  // Si no hay oficinas registradas para ese estado, proveer una oficina genérica
+  if (oficinas.length === 0) {
+    return [
+      {
+        co_oficina: `GEN-${estNum}`,
+        co_ourc: `GEN-${estNum}01A01`,
+        nb_oficina: `UNIDAD DE REGISTRO CIVIL MUNICIPAL`,
+        nu_estado: estNum,
+        nu_municipio: munNum || 1
+      }
+    ];
+  }
+
+  return oficinas;
+}
+
