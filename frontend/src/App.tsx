@@ -14,7 +14,9 @@ import {
   Layers,
   AlertTriangle,
   RotateCcw,
+  Eye,
 } from 'lucide-react';
+import { DetalleSolicitudModal } from './components/solicitudes/DetalleSolicitudModal';
 import { FormSolicitante } from './components/actas/FormSolicitante';
 import { FormAsociacionParentesco } from './components/actas/FormAsociacionParentesco';
 import { FormMadre, type ErroresMadre } from './components/actas/FormMadre';
@@ -155,6 +157,8 @@ export default function App() {
   const [cargandoGuardado, setCargandoGuardado] = useState<boolean>(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [alertaInconsistencia, setAlertaInconsistencia] = useState<string | null>(null);
+  const [solicitudDetalleModal, setSolicitudDetalleModal] = useState<any | null>(null);
+  const [ultimaSolicitudGuardada, setUltimaSolicitudGuardada] = useState<any | null>(null);
 
   // Estadísticas del AC
   const [acStats, setAcStats] = useState({
@@ -1091,38 +1095,44 @@ export default function App() {
       payloadActaData.fallecido = datosFallecido;
     }
 
-    const payload = {
+    const idGenerado = 'SOL-' + Date.now();
+    const payload: any = {
+      id: idGenerado,
       tipo_acta: tipoActa,
       operador: 'operador.taquilla',
       cedula_verificacion_central: false,
       datos_solicitante: {
         ...datosSolicitante,
         parentesco: parentesco,
+        parentesco_otro: parentescoOtro,
       },
       datos_acta: payloadActaData,
       datos_biometricos: huellaCapturada,
+      estado: 'PENDIENTE',
+      creado_en: new Date().toISOString(),
     };
+
+    console.group('📦 [CompilaRC] Solicitud Generada para Lote Offline / API Web');
+    console.log('ID Solicitud:', idGenerado);
+    console.log('Tipo Trámite:', tipoActa);
+    console.log('Solicitante:', payload.datos_solicitante);
+    console.log('Biometría (Huella FS88H):', payload.datos_biometricos);
+    console.log('Datos del Acta:', payload.datos_acta);
+    console.log('JSON Raw Completo:\n', JSON.stringify(payload, null, 2));
+    console.groupEnd();
 
     try {
       const wailsApp = (window as any).go?.main?.App;
       if (wailsApp && typeof wailsApp.GuardarSolicitud === 'function') {
-        await wailsApp.GuardarSolicitud(payload);
+        const idGuardado = await wailsApp.GuardarSolicitud(payload);
+        if (idGuardado) {
+          payload.id = idGuardado;
+        }
       } else {
-        setSolicitudesPendientes((prev) => [
-          {
-            id: 'SOL-' + Date.now(),
-            tipo_acta: tipoActa,
-            operador: 'operador.taquilla',
-            datos_solicitante: datosSolicitante,
-            datos_acta: payloadActaData,
-            datos_biometricos: huellaCapturada,
-            estado: 'PENDIENTE',
-            creado_en: new Date().toISOString(),
-          },
-          ...prev,
-        ]);
+        setSolicitudesPendientes((prev) => [payload, ...prev]);
       }
 
+      setUltimaSolicitudGuardada(payload);
       setMensajeExito(`¡Solicitud de ${tipoActa.replace('_', ' ')} almacenada con éxito en el lote local seguro (SQLite)!`);
       handleLimpiarFormulario();
       cargarStats();
@@ -1251,14 +1261,38 @@ export default function App() {
       {/* Contenido Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
         {mensajeExito && (
-          <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center justify-between text-emerald-800 text-xs font-semibold animate-fadeIn">
+          <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-emerald-950 text-xs font-semibold animate-fadeIn shadow-xs">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
               <span>{mensajeExito}</span>
             </div>
-            <button onClick={() => setMensajeExito(null)} className="text-emerald-700 hover:text-emerald-950 font-bold">
-              Cerrar
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              {ultimaSolicitudGuardada && (
+                <button
+                  type="button"
+                  onClick={() => setSolicitudDetalleModal(ultimaSolicitudGuardada)}
+                  className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer text-[11px]"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver Payload JSON</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setTabActiva('lotes')}
+                className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer text-[11px]"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Ver Cola ({solicitudesPendientes.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMensajeExito(null)}
+                className="text-emerald-700 hover:text-emerald-950 font-bold ml-1 p-1"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
@@ -1650,6 +1684,7 @@ export default function App() {
                       <th className="py-3 px-4">Biometría</th>
                       <th className="py-3 px-4">Estado</th>
                       <th className="py-3 px-4">Fecha Creación</th>
+                      <th className="py-3 px-4 text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1712,6 +1747,17 @@ export default function App() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">{sol.creado_en?.slice(0, 19)}</td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setSolicitudDetalleModal(sol)}
+                            className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-bold inline-flex items-center gap-1 text-[11px] transition-colors border border-blue-200 cursor-pointer shadow-2xs"
+                            title="Inspeccionar datos completos y JSON para la API Web"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Ver Payload</span>
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1826,6 +1872,13 @@ export default function App() {
           setHuellaCapturada(huella);
           setModalHuellaAbierto(false);
         }}
+      />
+
+      {/* Modal Inspector de Payload JSON de Solicitud */}
+      <DetalleSolicitudModal
+        isOpen={!!solicitudDetalleModal}
+        onClose={() => setSolicitudDetalleModal(null)}
+        solicitud={solicitudDetalleModal}
       />
 
       {/* Footer */}
