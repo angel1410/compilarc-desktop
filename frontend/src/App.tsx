@@ -1158,10 +1158,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
           {/* Logo y Título */}
           <div className="flex items-center gap-3">
-            <div className="h-11 px-2.5 rounded-xl bg-white flex items-center gap-2.5 shadow-sm border border-slate-100 shrink-0">
-              <img src="/logo_cne.png" alt="CNE" className="h-7 w-auto object-contain" />
-              <div className="h-6 w-px bg-slate-200" />
-              <img src="/logo-compilarc-transparente.png" alt="CompilaRC" className="h-8 w-auto object-contain" />
+            <div className="w-11 h-11 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+              <img src="/favicon.png" alt="CompilaRC" className="max-h-full max-w-full object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-2">
