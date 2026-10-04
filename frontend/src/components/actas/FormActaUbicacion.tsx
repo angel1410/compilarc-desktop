@@ -289,7 +289,7 @@ export const FormActaUbicacion: React.FC<Props> = ({
             >
               {oficinasDisponibles.map((o) => (
                 <option key={o.co_oficina} value={o.co_oficina}>
-                  {o.nb_oficina} ({o.co_ourc})
+                  {o.nb_oficina}
                 </option>
               ))}
             </SelectField>
