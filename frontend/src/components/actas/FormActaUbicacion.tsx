@@ -210,13 +210,8 @@ export const FormActaUbicacion: React.FC<Props> = ({
         <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wider border-b border-slate-100 pb-2.5 flex items-center justify-between">
           <span className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-blue-600" />
-            Oficina de Registro Civil (OURC - CIVIS)
+            Oficina de Registro Civil (OURC)
           </span>
-          {oficinaActual?.co_ourc && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-800 border border-blue-200">
-              CIVIS: {oficinaActual.co_ourc}
-            </span>
-          )}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -311,9 +306,6 @@ export const FormActaUbicacion: React.FC<Props> = ({
                 {oficinaActual.nb_parroquia ? ` • Parroquia ${oficinaActual.nb_parroquia}` : ''}
               </span>
             </div>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white text-blue-800 border border-blue-300 shadow-2xs">
-              CIVIS: {oficinaActual.co_ourc}
-            </span>
           </div>
         )}
       </div>
