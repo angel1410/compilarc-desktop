@@ -14,6 +14,10 @@ export function ConsultarAC(arg1, arg2) {
   return window['go']['main']['App']['ConsultarAC'](arg1, arg2);
 }
 
+export function ForzarVerificacionRed() {
+  return window['go']['main']['App']['ForzarVerificacionRed']();
+}
+
 export function GuardarSolicitud(arg1) {
   return window['go']['main']['App']['GuardarSolicitud'](arg1);
 }
@@ -24,6 +28,10 @@ export function ListarSolicitudesPendientes() {
 
 export function ObtenerEstadisticasAC() {
   return window['go']['main']['App']['ObtenerEstadisticasAC']();
+}
+
+export function ObtenerEstadoRed() {
+  return window['go']['main']['App']['ObtenerEstadoRed']();
 }
 
 export function ObtenerEstadoSensor() {

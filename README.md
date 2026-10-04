@@ -14,6 +14,7 @@ Aplicación de escritorio **Offline-First** desarrollada con **Wails v2 (Go 1.22
   - **Nacimiento**: Solicitante con parentesco dinámico, Madre (obligatoria), Padre (opcional) y Presentado con catálogo geográfico venezolano 100% offline.
   - **Defunción**: Solicitante con parentesco, Fallecido y acta de defunción.
   - **Matrimonio y Unión Estable de Hecho**: Preparados y modulares.
+- **Detección Automática de Red (Cableada Ethernet / Wi-Fi)**: Diagnóstico en tiempo real mediante APIs nativas de Windows (`GetAdaptersAddresses`) y Linux (`/sys/class/net`), conmutación automática fluida entre modo Online y Offline seguro, verificación de latencia y opción de forzado manual por operador.
 - **Multiplataforma**: Compilación nativa para Linux (`webkit2gtk-4.1`) y Windows (`amd64`).
 
 ---

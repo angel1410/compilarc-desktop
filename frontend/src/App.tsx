@@ -24,6 +24,8 @@ import { FormConyugues } from './components/actas/FormConyugues';
 import { FormFallecido, type ErroresFallecido } from './components/actas/FormFallecido';
 import { FormActaUbicacion, type ErroresActaUbicacion } from './components/actas/FormActaUbicacion';
 import { BiometricCaptureModal } from './components/biometric/BiometricCaptureModal';
+import { NetworkStatusBadge } from './components/ui/NetworkStatusBadge';
+import type { EstadoRed } from './types/network';
 import {
   sanitizarTextoNombre,
   sanitizarCedula,
@@ -128,8 +130,24 @@ export default function App() {
   const [tabActiva, setTabActiva] = useState<'nueva' | 'lotes' | 'ac'>('nueva');
   const [tipoActa, setTipoActa] = useState<'NACIMIENTO' | 'MATRIMONIO' | 'DEFUNCION' | 'UNION_ESTABLE'>('NACIMIENTO');
 
-  // Estado del sistema
-  const [modoOnline, setModoOnline] = useState<boolean>(false);
+  // Estado de Red (Detección automática de hardware y conectividad)
+  const [estadoRed, setEstadoRed] = useState<EstadoRed>({
+    online: false,
+    tipo_conexion: 'DESCONECTADO',
+    nombre_interfaz: '',
+    ip_local: '',
+    gateway: '',
+    tiene_internet: false,
+    latencia_ms: 0,
+    mensaje: 'Iniciando diagnóstico de red...',
+    ultima_revision: '',
+  });
+  const [forzarModoOffline, setForzarModoOffline] = useState<boolean>(false);
+  const [reverificandoRed, setReverificandoRed] = useState<boolean>(false);
+
+  // Modo online determinado automáticamente por la conexión de red activa
+  const modoOnline = estadoRed.online && !forzarModoOffline;
+
   const [modalHuellaAbierto, setModalHuellaAbierto] = useState<boolean>(false);
   const [huellaCapturada, setHuellaCapturada] = useState<any>(null);
   const [cargandoGuardado, setCargandoGuardado] = useState<boolean>(false);
@@ -248,11 +266,81 @@ export default function App() {
   const [erroresFallecido, setErroresFallecido] = useState<ErroresFallecido>({});
   const [erroresActa, setErroresActa] = useState<ErroresActaUbicacion>({});
 
-  // Cargar estadísticas iniciales desde Wails
+  // Cargar estadísticas iniciales y monitoreo de red desde Wails
   useEffect(() => {
     cargarStats();
     cargarSolicitudes();
+    cargarEstadoRed();
+
+    // Suscribirse al evento en tiempo real emitido por el backend Go en Wails
+    const runtime = (window as any).runtime;
+    if (runtime && typeof runtime.EventsOn === 'function') {
+      runtime.EventsOn('red:estado_cambiado', (nuevo: EstadoRed) => {
+        setEstadoRed(nuevo);
+      });
+    }
+
+    // Eventos nativos del navegador como respaldo
+    const handleBrowserOnline = () => cargarEstadoRed();
+    const handleBrowserOffline = () => cargarEstadoRed();
+    window.addEventListener('online', handleBrowserOnline);
+    window.addEventListener('offline', handleBrowserOffline);
+
+    return () => {
+      if (runtime && typeof runtime.EventsOff === 'function') {
+        runtime.EventsOff('red:estado_cambiado');
+      }
+      window.removeEventListener('online', handleBrowserOnline);
+      window.removeEventListener('offline', handleBrowserOffline);
+    };
   }, []);
+
+  const cargarEstadoRed = async () => {
+    try {
+      const wailsApp = (window as any).go?.main?.App;
+      if (wailsApp && typeof wailsApp.ObtenerEstadoRed === 'function') {
+        const estado = await wailsApp.ObtenerEstadoRed();
+        if (estado) {
+          setEstadoRed(estado);
+        }
+      } else {
+        // Fallback para pruebas en navegador estándar
+        const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : false;
+        setEstadoRed({
+          online: isOnline,
+          tipo_conexion: isOnline ? 'INALAMBRICA' : 'DESCONECTADO',
+          nombre_interfaz: isOnline ? 'Wi-Fi (Web)' : '',
+          ip_local: isOnline ? '127.0.0.1' : '',
+          gateway: isOnline ? '192.168.1.1' : '',
+          tiene_internet: isOnline,
+          latencia_ms: 15,
+          mensaje: isOnline ? 'Conectado a Red (Detección Web)' : 'Modo Offline (Sin red)',
+          ultima_revision: new Date().toLocaleTimeString(),
+        });
+      }
+    } catch (e) {
+      console.warn('Error consultando estado de red:', e);
+    }
+  };
+
+  const handleReverificarRed = async () => {
+    setReverificandoRed(true);
+    try {
+      const wailsApp = (window as any).go?.main?.App;
+      if (wailsApp && typeof wailsApp.ForzarVerificacionRed === 'function') {
+        const estado = await wailsApp.ForzarVerificacionRed();
+        if (estado) {
+          setEstadoRed(estado);
+        }
+      } else {
+        await cargarEstadoRed();
+      }
+    } catch (e) {
+      console.warn('Error forzando verificación de red:', e);
+    } finally {
+      setReverificandoRed(false);
+    }
+  };
 
   const cargarStats = async () => {
     try {
@@ -1000,6 +1088,10 @@ export default function App() {
   };
 
   const handleTransmitirLote = async () => {
+    if (!modoOnline) {
+      alert('La estación se encuentra en Modo Offline. Para transmitir solicitudes a CompilaRC-Web se requiere una conexión de red activa (cableada o Wi-Fi).');
+      return;
+    }
     const wailsApp = (window as any).go?.main?.App;
     if (wailsApp && typeof wailsApp.SimularSincronizacionLote === 'function') {
       const res = await wailsApp.SimularSincronizacionLote();
@@ -1051,18 +1143,14 @@ export default function App() {
               <span>AC Local: v{acStats.version_corte} (&lt;3ms)</span>
             </div>
 
-            {/* Toggle Online/Offline */}
-            <button
-              onClick={() => setModoOnline(!modoOnline)}
-              className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border ${
-                modoOnline
-                  ? 'bg-emerald-600/30 text-emerald-200 border-emerald-500/50'
-                  : 'bg-amber-600/30 text-amber-200 border-amber-500/50'
-              }`}
-            >
-              {modoOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-              <span>{modoOnline ? 'Modo Online' : 'Modo Offline (Seguro)'}</span>
-            </button>
+            {/* Indicador Automático de Red (Ethernet / Wi-Fi / Offline) */}
+            <NetworkStatusBadge
+              estadoRed={estadoRed}
+              forzarOffline={forzarModoOffline}
+              onToggleForzarOffline={setForzarModoOffline}
+              onReverificar={handleReverificarRed}
+              reverificando={reverificandoRed}
+            />
           </div>
         </div>
       </header>
@@ -1462,13 +1550,37 @@ export default function App() {
 
               <button
                 onClick={handleTransmitirLote}
-                disabled={solicitudesPendientes.length === 0}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-40"
+                disabled={solicitudesPendientes.length === 0 || !modoOnline}
+                title={!modoOnline ? 'Se requiere conexión a la red de CompilaRC-Web' : 'Transmitir solicitudes a la central'}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-40 ${
+                  modoOnline
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                    : 'bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300'
+                }`}
               >
                 <Send className="w-4 h-4" />
-                Transmitir Lote a CompilaRC-Web
+                <span>{modoOnline ? 'Transmitir Lote a CompilaRC-Web' : 'Sin Red (Lotes Protegidos)'}</span>
               </button>
             </div>
+
+            {!modoOnline && solicitudesPendientes.length > 0 && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <WifiOff className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>
+                    <strong>Estación en Modo Offline:</strong> Los {solicitudesPendientes.length} paquetes se mantendrán cifrados y seguros en la base SQLite local. La transmisión se habilitará de forma automática en cuanto se conecte el cable de red o Wi-Fi.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleReverificarRed}
+                  disabled={reverificandoRed}
+                  className="px-2.5 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg font-semibold text-[11px] transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+                >
+                  Comprobar Red
+                </button>
+              </div>
+            )}
 
             {solicitudesPendientes.length === 0 ? (
               <div className="p-12 text-center text-slate-400 space-y-3">

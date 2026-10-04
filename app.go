@@ -10,7 +10,10 @@ import (
 
 	"compilarc-desktop/internal/ac"
 	"compilarc-desktop/internal/biometric"
+	"compilarc-desktop/internal/network"
 	"compilarc-desktop/internal/storage"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -19,12 +22,14 @@ type App struct {
 	acDB          *ac.ACDatabase
 	scanner       *biometric.ScannerService
 	packetStorage *storage.PacketStorage
+	netService    *network.NetworkService
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
-		scanner: biometric.NewScannerService(),
+		scanner:    biometric.NewScannerService(),
+		netService: network.NewNetworkService(),
 	}
 }
 
@@ -78,6 +83,13 @@ func (a *App) startup(ctx context.Context) {
 		fmt.Printf("Error inicializando Paquetes Offline SQLite: %v\n", err)
 	} else {
 		a.packetStorage = packDB
+	}
+
+	// Iniciar monitoreo continuo del estado de red
+	if a.netService != nil {
+		a.netService.IniciarMonitoreo(a.ctx, func(estado network.EstadoRed) {
+			runtime.EventsEmit(a.ctx, "red:estado_cambiado", estado)
+		})
 	}
 }
 
@@ -214,3 +226,24 @@ func (a *App) SimularSincronizacionLote() (map[string]interface{}, error) {
 		"timestamp":    time.Now().Format("2006-01-02 15:04:05"),
 	}, nil
 }
+
+// ObtenerEstadoRed retorna el diagnóstico actual de la conectividad de red
+func (a *App) ObtenerEstadoRed() network.EstadoRed {
+	if a.netService == nil {
+		return network.EstadoRed{Online: false, TipoConexion: network.ConexionNinguna, Mensaje: "Servicio de red no disponible"}
+	}
+	return a.netService.ObtenerEstadoActual()
+}
+
+// ForzarVerificacionRed fuerza un chequeo inmediato y emite el evento correspondiente
+func (a *App) ForzarVerificacionRed() network.EstadoRed {
+	if a.netService == nil {
+		return network.EstadoRed{Online: false, TipoConexion: network.ConexionNinguna, Mensaje: "Servicio de red no disponible"}
+	}
+	st := a.netService.VerificarEstado()
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "red:estado_cambiado", st)
+	}
+	return st
+}
+

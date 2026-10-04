@@ -82,6 +82,39 @@ export namespace biometric {
 
 }
 
+export namespace network {
+	
+	export class EstadoRed {
+	    online: boolean;
+	    tipo_conexion: string;
+	    nombre_interfaz: string;
+	    ip_local: string;
+	    gateway: string;
+	    tiene_internet: boolean;
+	    latencia_ms: number;
+	    mensaje: string;
+	    ultima_revision: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new EstadoRed(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.online = source["online"];
+	        this.tipo_conexion = source["tipo_conexion"];
+	        this.nombre_interfaz = source["nombre_interfaz"];
+	        this.ip_local = source["ip_local"];
+	        this.gateway = source["gateway"];
+	        this.tiene_internet = source["tiene_internet"];
+	        this.latencia_ms = source["latencia_ms"];
+	        this.mensaje = source["mensaje"];
+	        this.ultima_revision = source["ultima_revision"];
+	    }
+	}
+
+}
+
 export namespace storage {
 	
 	export class SolicitudCertificacion {
