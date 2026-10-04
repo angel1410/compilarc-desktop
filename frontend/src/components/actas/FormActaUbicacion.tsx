@@ -48,26 +48,24 @@ export const FormActaUbicacion: React.FC<Props> = ({
         />
 
         <InputField
-          label="Número de Acta"
+          label="N° de Acta (opcional)"
           name="co_acta"
-          type="number"
+          type="text"
           maxLength={10}
           value={datos.co_acta}
           onChange={onChange}
           error={errores.co_acta}
-          required
           placeholder="Ej: 0045"
         />
 
         <InputField
-          label="Tomo"
+          label="Tomo (opcional)"
           name="tomo"
           type="text"
           maxLength={10}
           value={datos.tomo}
           onChange={onChange}
           error={errores.tomo}
-          required
           placeholder="Ej: 1"
           className="uppercase"
         />

@@ -997,13 +997,20 @@ export default function App() {
       }
     }
 
-    if (!datosActa.co_acta) {
-      errAct.co_acta = 'El Número de Acta es obligatorio.';
-      hayErrores = true;
+    if (datosActa.dia) {
+      const diaNum = parseInt(datosActa.dia, 10);
+      if (isNaN(diaNum) || diaNum < 1 || diaNum > 31) {
+        errAct.dia = 'El día debe estar entre 1 y 31.';
+        hayErrores = true;
+      }
     }
-    if (!datosActa.tomo) {
-      errAct.tomo = 'El Tomo es obligatorio.';
-      hayErrores = true;
+
+    if (datosActa.mes) {
+      const mesNum = parseInt(datosActa.mes, 10);
+      if (isNaN(mesNum) || mesNum < 1 || mesNum > 12) {
+        errAct.mes = 'El mes debe estar entre 1 y 12.';
+        hayErrores = true;
+      }
     }
 
     setErroresSolicitante(errSol);
