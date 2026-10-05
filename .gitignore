@@ -1,7 +1,9 @@
 # Binarios compilados
 compilarc-desktop
 compilarc-desktop.exe
+*.exe
 build/bin/
+build/windows/installer/tmp/
 
 # Frontend
 frontend/node_modules/
