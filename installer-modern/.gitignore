@@ -1,0 +1,4 @@
+build/bin/
+payload/
+frontend/dist/
+frontend/node_modules
