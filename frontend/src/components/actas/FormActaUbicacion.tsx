@@ -133,7 +133,7 @@ export const FormActaUbicacion: React.FC<Props> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <InputField
-            label="Año del Acta *"
+            label="Año del Acta"
             name="anio"
             type="number"
             maxLength={4}

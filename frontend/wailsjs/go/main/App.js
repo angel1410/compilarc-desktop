@@ -6,8 +6,12 @@ export function AplicarDeltaAC(arg1) {
   return window['go']['main']['App']['AplicarDeltaAC'](arg1);
 }
 
-export function CapturarHuella(arg1) {
-  return window['go']['main']['App']['CapturarHuella'](arg1);
+export function CapturarHuella(arg1, arg2) {
+  return window['go']['main']['App']['CapturarHuella'](arg1, arg2);
+}
+
+export function ConfigurarServidorURL(arg1) {
+  return window['go']['main']['App']['ConfigurarServidorURL'](arg1);
 }
 
 export function ConsultarAC(arg1, arg2) {
@@ -26,6 +30,10 @@ export function ListarSolicitudesPendientes() {
   return window['go']['main']['App']['ListarSolicitudesPendientes']();
 }
 
+export function ObtenerConfigServidor() {
+  return window['go']['main']['App']['ObtenerConfigServidor']();
+}
+
 export function ObtenerEstadisticasAC() {
   return window['go']['main']['App']['ObtenerEstadisticasAC']();
 }
@@ -40,4 +48,8 @@ export function ObtenerEstadoSensor() {
 
 export function SimularSincronizacionLote() {
   return window['go']['main']['App']['SimularSincronizacionLote']();
+}
+
+export function VerificarHuellaOnline(arg1, arg2, arg3) {
+  return window['go']['main']['App']['VerificarHuellaOnline'](arg1, arg2, arg3);
 }

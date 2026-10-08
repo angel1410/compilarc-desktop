@@ -47,6 +47,28 @@ func NewACDatabase(dbPath string) (*ACDatabase, error) {
 }
 
 func (a *ACDatabase) initSchema() error {
+	// 1. Si existe la tabla oficial 'cedulados' (base completa de 36.6 millones de registros),
+	// crear la vista de compatibilidad 'ac_local' para consultas indexadas sub-milisegundo.
+	var countCedulados int
+	_ = a.db.QueryRow(`SELECT count(*) FROM sqlite_master WHERE type='table' AND name='cedulados'`).Scan(&countCedulados)
+	if countCedulados > 0 {
+		viewQuery := `
+		CREATE VIEW IF NOT EXISTS ac_local AS
+		SELECT 
+			co_nacionalidad AS nacionalidad,
+			nu_cedula AS cedula,
+			primer_nombre,
+			COALESCE(segundo_nombre, '') AS segundo_nombre,
+			primer_apellido,
+			COALESCE(segundo_apellido, '') AS segundo_apellido,
+			COALESCE(fe_nacimiento, '') AS fecha_nacimiento,
+			co_sexo AS sexo
+		FROM cedulados;
+		`
+		_, _ = a.db.Exec(viewQuery)
+		return nil
+	}
+
 	query := `
 	CREATE TABLE IF NOT EXISTS ac_local (
 		nacionalidad TEXT NOT NULL,

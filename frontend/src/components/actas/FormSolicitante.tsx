@@ -15,9 +15,16 @@ interface Props {
   errores?: ErroresSolicitante;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onUpdateDatos?: (nuevosDatos: Partial<DatosSolicitante>) => void;
+  onEstadoACChange?: (estado: { cargando: boolean; verificado: boolean; noEncontrado: boolean }) => void;
 }
 
-export const FormSolicitante: React.FC<Props> = ({ datos, errores = {}, onChange, onUpdateDatos }) => {
+export const FormSolicitante: React.FC<Props> = ({ 
+  datos, 
+  errores = {}, 
+  onChange, 
+  onUpdateDatos,
+  onEstadoACChange,
+}) => {
   const { cargando, bloqueado, noEncontrado } = useConsultaCiudadano(
     datos.nacionalidad,
     datos.cedula,
@@ -36,12 +43,22 @@ export const FormSolicitante: React.FC<Props> = ({ datos, errores = {}, onChange
     }
   );
 
+  React.useEffect(() => {
+    if (onEstadoACChange) {
+      onEstadoACChange({
+        cargando,
+        verificado: bloqueado,
+        noEncontrado,
+      });
+    }
+  }, [cargando, bloqueado, noEncontrado, onEstadoACChange]);
+
   return (
     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs space-y-4">
       <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center justify-between">
         <span className="flex items-center gap-2">👤 Datos del Solicitante</span>
         {cargando && <span className="text-xs text-amber-500 font-normal animate-pulse">Buscando en AC...</span>}
-        {bloqueado && <span className="text-xs font-bold text-emerald-600 font-normal flex items-center gap-1">✓ Verificado en AC</span>}
+        {bloqueado && <span className="text-xs text-emerald-600 font-normal flex items-center gap-1">✓ Verificado en AC</span>}
         {noEncontrado && <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">⚠️ No indexada (Cédula reciente)</span>}
       </h3>
       

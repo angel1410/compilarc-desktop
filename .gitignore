@@ -2,6 +2,7 @@
 compilarc-desktop
 compilarc-desktop.exe
 *.exe
+bin/
 build/bin/
 build/windows/installer/tmp/
 
@@ -23,7 +24,20 @@ data/*.db-shm
 *.zip
 dist_windows/
 CompilaRC-Desktop-Windows/
+PAQUETE_USB_COMPILARC/
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+
+# Librerías dinámicas
+*.dll
+*.so
+*.dylib
+
+# Muestras biométricas y capturas temporales
+*.wsq
+*.raw
+img.jpeg
+internal/biometric/muestras/
+

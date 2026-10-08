@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +16,12 @@ import (
 
 //go:embed payload/compilarc-desktop.exe
 var payloadExe []byte
+
+//go:embed payload/ftrScanAPI.dll
+var payloadFtrScanAPI []byte
+
+//go:embed payload/appicon.ico
+var payloadIcon []byte
 
 //go:embed payload/data/ac_local.db
 var payloadAC []byte
@@ -89,17 +96,32 @@ func (a *App) IniciarInstalacion(rutaDestino string, crearAccesoEscritorio bool)
 			return
 		}
 
-		notificar(60, "Configurando base de datos local SQLite (Padrón AC)...")
+		notificar(50, "Instalando controlador de captura biométrica Futronic FS88H...")
+		dllPath := filepath.Join(rutaDestino, "ftrScanAPI.dll")
+		_ = os.WriteFile(dllPath, payloadFtrScanAPI, 0644)
+
+		iconPath := filepath.Join(rutaDestino, "appicon.ico")
+		_ = os.WriteFile(iconPath, payloadIcon, 0644)
+
+		notificar(65, "Configurando conexión con Servidor Central (192.168.213.42)...")
+		cfgData := []byte(`{
+  "server_url": "http://192.168.213.42:8080",
+  "api_key": "P!Y2lFcqAiV1E][p",
+  "estacion_id": "TAQUILLA-01"
+}`)
+		_ = os.WriteFile(filepath.Join(rutaDestino, "config.json"), cfgData, 0644)
+		_ = os.WriteFile(filepath.Join(dataDir, "config.json"), cfgData, 0644)
+
+		notificar(80, "Inicializando almacenamiento seguro y padrón local...")
 		acPath := filepath.Join(dataDir, "ac_local.db")
 		_ = os.WriteFile(acPath, payloadAC, 0644)
 
-		notificar(75, "Inicializando almacenamiento seguro de solicitudes offline...")
 		packPath := filepath.Join(dataDir, "solicitudes_offline.db")
 		_ = os.WriteFile(packPath, payloadPackets, 0644)
 
 		notificar(90, "Creando acceso directo institucional en el Escritorio...")
 		if runtime.GOOS == "windows" && crearAccesoEscritorio {
-			a.crearAccesoDirectoWindows(exePath, rutaDestino)
+			a.crearAccesoDirectoWindows(exePath, rutaDestino, iconPath)
 		}
 
 		notificar(100, "¡Instalación completada exitosamente!")
@@ -113,27 +135,67 @@ func (a *App) IniciarInstalacion(rutaDestino string, crearAccesoEscritorio bool)
 	return nil
 }
 
-func (a *App) crearAccesoDirectoWindows(targetExe, workDir string) {
+func (a *App) crearAccesoDirectoWindows(targetExe, workDir, iconPath string) {
+	// 1. Crear via VBScript (el método más confiable y nativo en Windows 10/11)
+	vbsContent := fmt.Sprintf(`Set WshShell = CreateObject("WScript.Shell")
+pubDesktop = "C:\Users\Public\Desktop"
+If CreateObject("Scripting.FileSystemObject").FolderExists(pubDesktop) Then
+    Set sc1 = WshShell.CreateShortcut(pubDesktop & "\CompilaRC Desktop.lnk")
+    sc1.TargetPath = "%s"
+    sc1.WorkingDirectory = "%s"
+    sc1.IconLocation = "%s,0"
+    sc1.Description = "Estacion Oficial de Registro Civil y Captura Biometrica (CNE)"
+    sc1.Save
+End If
+
+userDesktop = WshShell.SpecialFolders("Desktop")
+Set sc2 = WshShell.CreateShortcut(userDesktop & "\CompilaRC Desktop.lnk")
+sc2.TargetPath = "%s"
+sc2.WorkingDirectory = "%s"
+sc2.IconLocation = "%s,0"
+sc2.Description = "Estacion Oficial de Registro Civil y Captura Biometrica (CNE)"
+sc2.Save
+
+allPrograms = WshShell.SpecialFolders("AllUsersPrograms")
+Set sc3 = WshShell.CreateShortcut(allPrograms & "\CompilaRC Desktop.lnk")
+sc3.TargetPath = "%s"
+sc3.WorkingDirectory = "%s"
+sc3.IconLocation = "%s,0"
+sc3.Save
+`, targetExe, workDir, iconPath, targetExe, workDir, iconPath, targetExe, workDir, iconPath)
+
+	tempVbs := filepath.Join(os.TempDir(), "compilarc_shortcut.vbs")
+	if err := os.WriteFile(tempVbs, []byte(vbsContent), 0644); err == nil {
+		cmdVbs := exec.Command("wscript.exe", tempVbs)
+		_ = cmdVbs.Run()
+		_ = os.Remove(tempVbs)
+	}
+
+	// 2. Respaldo adicional con PowerShell
 	psScript := fmt.Sprintf(`
 		$WshShell = New-Object -comObject WScript.Shell
-		$DesktopPath = [Environment]::GetFolderPath('Desktop')
-		$Shortcut = $WshShell.CreateShortcut("$DesktopPath\CompilaRC Desktop.lnk")
-		$Shortcut.TargetPath = "%s"
-		$Shortcut.WorkingDirectory = "%s"
-		$Shortcut.IconLocation = "%s,0"
-		$Shortcut.Description = "Estación Oficial de Registro Civil y Captura Biométrica (CNE)"
-		$Shortcut.Save()
+		$paths = @(
+			"C:\Users\Public\Desktop",
+			[Environment]::GetFolderPath('Desktop'),
+			[Environment]::GetFolderPath('CommonDesktopDirectory')
+		)
+		foreach ($p in $paths) {
+			if (Test-Path $p) {
+				$sc = $WshShell.CreateShortcut("$p\CompilaRC Desktop.lnk")
+				$sc.TargetPath = "%s"
+				$sc.WorkingDirectory = "%s"
+				$sc.IconLocation = "%s,0"
+				$sc.Description = "Estacion Oficial de Registro Civil y Captura Biometrica (CNE)"
+				$sc.Save()
+			}
+		}
+	`, targetExe, workDir, iconPath)
+	cmdPs := exec.Command("powershell", "-NoProfile", "-NonInteractive", "-Command", psScript)
+	_ = cmdPs.Run()
 
-		$ProgramsPath = [Environment]::GetFolderPath('Programs')
-		$ShortcutMenu = $WshShell.CreateShortcut("$ProgramsPath\CompilaRC Desktop.lnk")
-		$ShortcutMenu.TargetPath = "%s"
-		$ShortcutMenu.WorkingDirectory = "%s"
-		$ShortcutMenu.IconLocation = "%s,0"
-		$ShortcutMenu.Save()
-	`, targetExe, workDir, targetExe, targetExe, workDir, targetExe)
-
-	cmd := exec.Command("powershell", "-NoProfile", "-NonInteractive", "-Command", psScript)
-	_ = cmd.Run()
+	// 3. Forzar refresco de caché de iconos en Windows Shell
+	cmdRefresh := exec.Command("cmd.exe", "/c", "ie4uinit.exe -show")
+	_ = cmdRefresh.Run()
 }
 
 // EjecutarAppIniciada lanza el ejecutable instalado y cierra el instalador
@@ -144,6 +206,7 @@ func (a *App) EjecutarAppIniciada(rutaDestino string) {
 	exePath := filepath.Join(rutaDestino, "compilarc-desktop.exe")
 	if runtime.GOOS == "windows" {
 		cmd := exec.Command(exePath)
+		cmd.Dir = rutaDestino
 		_ = cmd.Start()
 	}
 	wailsRuntime.Quit(a.ctx)
@@ -151,4 +214,22 @@ func (a *App) EjecutarAppIniciada(rutaDestino string) {
 
 func (a *App) CerrarInstalador() {
 	wailsRuntime.Quit(a.ctx)
+}
+
+func copiarArchivoGrande(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	buf := make([]byte, 1024*1024*8) // 8MB buffer para copia ultrarrápida
+	_, err = io.CopyBuffer(out, in, buf)
+	return err
 }

@@ -260,7 +260,7 @@ export const FormConyugues: React.FC<Props> = ({
         {/* Campo de Correo Electrónico para Ella */}
         {esEllaSolicitante && (
           <div className="pt-2 border-t border-indigo-100">
-            <label className="block text-[11px] font-bold text-indigo-900 uppercase mb-1 flex items-center gap-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-900 uppercase mb-1">
               <Mail className="w-3.5 h-3.5 text-indigo-600" />
               Correo del Solicitante (Para Entrega Digital) <span className="text-red-600 font-bold">*</span>
             </label>
@@ -278,7 +278,7 @@ export const FormConyugues: React.FC<Props> = ({
 
         {isOre && (
           <div className="pt-2 border-t border-gray-200">
-            <label className="block text-[11px] font-bold text-gray-700 uppercase mb-1 flex items-center gap-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700 uppercase mb-1">
               <Mail className="w-3.5 h-3.5 text-gray-500" />
               Correo Electrónico de la Cónyuge (Ella)
             </label>
@@ -427,7 +427,7 @@ export const FormConyugues: React.FC<Props> = ({
         {/* Campo de Correo Electrónico para Él */}
         {esElSolicitante && (
           <div className="pt-2 border-t border-indigo-100">
-            <label className="block text-[11px] font-bold text-indigo-900 uppercase mb-1 flex items-center gap-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-900 uppercase mb-1">
               <Mail className="w-3.5 h-3.5 text-indigo-600" />
               Correo del Solicitante (Para Entrega Digital) <span className="text-red-600 font-bold">*</span>
             </label>
@@ -445,7 +445,7 @@ export const FormConyugues: React.FC<Props> = ({
 
         {isOre && (
           <div className="pt-2 border-t border-gray-200">
-            <label className="block text-[11px] font-bold text-gray-700 uppercase mb-1 flex items-center gap-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700 uppercase mb-1">
               <Mail className="w-3.5 h-3.5 text-gray-500" />
               Correo Electrónico del Cónyuge (Él)
             </label>

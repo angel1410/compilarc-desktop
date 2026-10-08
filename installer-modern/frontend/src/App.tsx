@@ -221,6 +221,9 @@ export default function App() {
               <div>
                 <strong className="block text-white font-bold text-sm">¡Instalación Completada!</strong>
                 <span>CompilaRC Desktop quedó configurado y listo en <code>{rutaDestino}</code></span>
+                <span className="block text-[11px] text-emerald-300/90 mt-1">
+                  Acceso directo creado en el Escritorio. Puede transferir bases de datos o padrones en <code>{rutaDestino}\data</code> cuando lo requiera.
+                </span>
               </div>
             </div>
 

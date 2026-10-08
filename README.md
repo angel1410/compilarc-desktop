@@ -80,3 +80,50 @@ La aplicación gestiona automáticamente el almacenamiento local:
    - `V-12345678`: Carlos Alberto Perez Rodriguez (M)
    - `V-87654321`: Maria Elena Gonzalez Lopez (F)
 3. **Instalación en Sistema**: Si el ejecutable reside en un directorio de solo lectura (como `C:\Program Files`), los datos se redirigen automáticamente a `%APPDATA%\CompilaRC\data` en Windows o `~/.config/CompilaRC/data` en Linux.
+
+---
+
+## 🛡️ Cifrado en Reposo y Herramienta Forense de Rescate (`compilarc-rescue`)
+
+Todas las solicitudes offline guardadas en `solicitudes_offline.db` se encuentran **cifradas en reposo con AES-256-GCM** para salvaguardar la privacidad de los datos ciudadanos y las plantillas biométricas.
+
+### Escenario de Contingencia (Laptop dañada / Extracción de Disco USB)
+Si una estación de trabajo sufre una falla física (no enciende, tarjeta madre dañada, etc.), se puede extraer el disco duro/SSD, conectarlo por USB a otra computadora (Linux o Windows) y recuperar la información pendiente mediante la herramienta forense `compilarc-rescue`:
+
+```bash
+# Compilar binarios de rescate (Linux y Windows):
+go build -o bin/compilarc-rescue ./cmd/rescue
+GOOS=windows GOARCH=amd64 go build -o bin/compilarc-rescue.exe ./cmd/rescue
+```
+
+### Modos de Uso:
+
+#### 1. Modo Interactivo (Asistente guiado):
+Al ejecutar sin parámetros (o hacer doble clic en `compilarc-rescue.exe` en Windows), se abre un menú de texto con las opciones guiadas.
+```bash
+./bin/compilarc-rescue        # En Linux
+compilarc-rescue.exe          # En Windows
+```
+
+#### 2. Comandos CLI:
+- **Escanear discos USB y detectar solicitudes:**
+  ```bash
+  compilarc-rescue scan
+  # O indicando unidad/disco específico:
+  compilarc-rescue scan -drive E:          # En Windows
+  compilarc-rescue scan -drive /media/usb  # En Linux
+  ```
+- **Inspeccionar detalle de solicitudes:**
+  ```bash
+  compilarc-rescue inspect
+  ```
+- **Exportar paquete de rescate a JSON con Checksum SHA-256:**
+  ```bash
+  compilarc-rescue export -out paquete_rescate.json -mark-synced
+  ```
+- **Transmitir directamente a CompilaRC-Web:**
+  ```bash
+  compilarc-rescue sync -url http://servidor-web:8000/api/v1/sincronizacion/lote -token <TOKEN>
+  ```
+*Nota: La herramienta crea automáticamente una copia de seguridad `solicitudes_offline_BACKUP_<timestamp>.bak` antes de modificar la base de datos.*
+

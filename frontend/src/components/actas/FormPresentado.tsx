@@ -336,7 +336,7 @@ export const FormPresentado: React.FC<Props> = ({
 
           {/* Centro de Salud Filtrado según Estado y Parroquia */}
           <div className="space-y-1.5 pt-1">
-            <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center justify-between">
+            <label className="flex items-center justify-between text-[11px] font-bold text-slate-600 uppercase mb-1">
               <span>Centro de Salud de Nacimiento</span>
               {datos.parroquia && centrosParroquia.length > 0 && (
                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">

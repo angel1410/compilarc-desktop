@@ -23,10 +23,11 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:             "CompilaRC Desktop - Registro Civil (CNE)",
-		Width:             1280,
-		Height:            850,
-		MinWidth:          1024,
-		MinHeight:         700,
+		Width:             1200,
+		Height:            680,
+		MinWidth:          1000,
+		MinHeight:         560,
+		WindowStartState: options.Maximised,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

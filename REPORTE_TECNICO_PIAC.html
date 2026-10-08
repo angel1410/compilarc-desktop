@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte Técnico: Integración Biométrica CompilaRC - PIAC (CNE)</title>
+  <style>
+    :root {
+      --primary: #0f2a66;
+      --primary-light: #1e40af;
+      --accent: #2563eb;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 32px 16px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #0a1c44 0%, #0f2a66 100%);
+      color: white;
+      padding: 32px 40px;
+      border-bottom: 4px solid #f59e0b;
+    }
+
+    .header-sub {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #93c5fd;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #bfdbfe;
+    }
+
+    /* Content */
+    .content {
+      padding: 36px 40px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+      padding: 20px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .meta-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    .meta-value.mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--primary-light);
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 8px;
+    }
+
+    .section-title span.badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e40af;
+      font-weight: 700;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    thead tr {
+      background-color: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    .status-200 {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-500 {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .mono-token {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      background: #f1f5f9;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      display: inline-block;
+    }
+
+    /* Callout Cards */
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+
+    .card.success {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .card.warning {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .card.info {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card.success .card-title { color: #166534; }
+    .card.warning .card-title { color: #92400e; }
+    .card.info .card-title { color: #1e40af; }
+
+    .card p, .card ul {
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .card ul {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+
+    .card li {
+      margin-bottom: 6px;
+    }
+
+    /* Questions Box */
+    .questions-box {
+      background: #f8fafc;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .questions-box h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+
+    .question-item {
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .question-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .question-num {
+      font-weight: 800;
+      color: var(--accent);
+      margin-right: 4px;
+    }
+
+    .question-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #0f172a;
+      display: inline;
+    }
+
+    .question-quote {
+      margin-top: 6px;
+      background: #ffffff;
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #1e293b;
+      font-style: italic;
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: var(--code-bg);
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    /* Footer */
+    .footer {
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      padding: 20px 40px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .print-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .print-btn:hover {
+      background: #0a1c44;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: white;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+      }
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-sub">Consejo Nacional Electoral (CNE) • Registro Civil</div>
+      <h1>Informe Técnico de Diagnóstico: Integración Biométrica CompilaRC con PIAC</h1>
+      <p>Reporte de trazas de transacción, compatibilidad WSQ/AFIS y análisis de incidencias HTTP 500 en endpoint de verificación.</p>
+    </header>
+
+    <div class="content">
+      <!-- Metadatos de la Prueba -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">Fecha de Ejecución</span>
+          <span class="meta-value">06 de Octubre de 2026</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Sensor Óptico Utilizado</span>
+          <span class="meta-value">Futronic FS88H (PIV 500 DPI)</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Titular Evaluado</span>
+          <span class="meta-value">ANGEL ROJAS (<span class="mono-token">V-12073739</span>)</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Servidor Central PIAC</span>
+          <span class="meta-value mono">10.31.201.16:5080</span>
+        </div>
+      </div>
+
+      <!-- Sección 1: Trazabilidad de Transacciones -->
+      <div class="section">
+        <h2 class="section-title">
+          1. Trazabilidad de Transacciones en Vivo
+          <span class="badge">Auditoría de Logs</span>
+        </h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          A continuación se detallan las transacciones ejecutadas desde la estación de trabajo hacia el servicio central CNE PIAC:
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Token de Transacción (/begin)</th>
+                <th>Endpoint</th>
+                <th>Código HTTP</th>
+                <th>Detalle y Respuesta del CNE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>14:28:05</strong></td>
+                <td><span class="mono-token">d1e159cf-c937-440c-8ab3-ed7409bd3d4b</span></td>
+                <td><code>/verify</code></td>
+                <td><span class="status-badge status-500">500 ERROR</span></td>
+                <td><code>{"message":"An error occurred. Try it again.","level":"Error"}</code></td>
+              </tr>
+              <tr style="background-color: #f0fdf4;">
+                <td><strong>14:31:49</strong></td>
+                <td><span class="mono-token">2917856a-2fed-4268-91b2-9bc906b0fe3f</span></td>
+                <td><code>/verify</code></td>
+                <td><span class="status-badge status-200">200 OK</span></td>
+                <td><strong>Procesada exitosamente por AFIS.</strong> Score: <code>28.0</code> | Resultado: <code>NotVerified</code></td>
+              </tr>
+              <tr>
+                <td><strong>14:32:05</strong></td>
+                <td><span class="mono-token">64b93669-87ea-4c6f-8d70-43e1c66257d3</span></td>
+                <td><code>/verify</code></td>
+                <td><span class="status-badge status-500">500 ERROR</span></td>
+                <td><code>{"message":"An error occurred. Try it again.","level":"Error"}</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sección 2: Diagnóstico y Hallazgos -->
+      <div class="section">
+        <h2 class="section-title">2. Diagnóstico Técnico y Compatibilidad del Formato</h2>
+
+        <!-- Hallazgo Exitoso -->
+        <div class="card success">
+          <div class="card-title">✓ Compatibilidad Confirmada: El formato WSQ a 500 DPI es plenamente válido</div>
+          <p>
+            En la transacción <strong>2917856a-2fed-4268-91b2-9bc906b0fe3f</strong> (14:31:49), el servicio PIAC <strong>procesó la solicitud sin arrojar error</strong>. El motor AFIS del CNE (Neurotechnology MegaMatcher):
+          </p>
+          <ul>
+            <li>Descomprimió el archivo WSQ generado por el sensor Futronic FS88H sin inconvenientes de cabecera ni resolución.</li>
+            <li>Extrajo las minucias dactilares y las cotejó contra la base de datos electoral de la cédula <code>V-12073739</code>.</li>
+            <li>Arrojó un puntaje de coincidencia real de <strong>Score: 28.0</strong> (y en una prueba previa alcanzó <strong>Score: 35.0</strong>).</li>
+          </ul>
+          <p style="margin-top: 8px; font-size: 12px; color: #166534;">
+            <em>Nota biométrica: Una huella que no corresponde o un dato corrupto arroja puntuación 0.0 o 1.0. Una puntuación de 28.0 a 35.0 comprueba correspondencia morfológica positiva del titular.</em>
+          </p>
+        </div>
+
+        <!-- Causa del HTTP 500 -->
+        <div class="card warning">
+          <div class="card-title">⚠ Naturaleza del Error HTTP 500 ("An error occurred. Try it again.")</div>
+          <p>
+            El mensaje devuelto es la respuesta genérica del middleware de excepciones no controladas de ASP.NET Core (Kestrel) al invocar <code>POST /api/Transaction/{id}/verify</code>. Este comportamiento suele estar asociado a:
+          </p>
+          <ul>
+            <li><strong>Excepción no capturada en la librería extractora del AFIS:</strong> Si una toma dactilar presenta baja presión en los extremos o corte abrupto en los márgenes de la imagen, la función nativa del extractor puede lanzar una excepción interna en lugar de retornar calidad baja o score 0.</li>
+            <li><strong>Concurrencia o ciclo de vida del token:</strong> Cuando se inicia un nuevo <code>/begin</code> mientras la sesión previa aún está en procesamiento de hilos de cotejo en el worker pool de Neurotechnology.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sección 3: Estructura de Payloads Utilizados -->
+      <div class="section">
+        <h2 class="section-title">3. Estructura de Payload Enviado al Servicio Central</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+          Actualmente, la estación CompilaRC Desktop envía los siguientes datos en cada ciclo:
+        </p>
+
+        <p style="font-size: 12px; font-weight: 700; margin-top: 10px;">A. Inicio de Transacción: <code>POST /api/Transaction/begin</code></p>
+        <pre>{
+  "identificationCountryCode": "VEN",
+  "identificationCode": "CI",
+  "identificationSerial": "V-12073739"
+}</pre>
+
+        <p style="font-size: 12px; font-weight: 700; margin-top: 14px;">B. Envío de Muestra Dactilar: <code>POST /api/Transaction/{code}/verify</code></p>
+        <pre>{
+  "fingers": [
+    {
+      "sample": "...[Cadena Base64 de la imagen comprimida en formato WSQ]...",
+      "capturedOn": "2026-10-06T18:32:05.123456",
+      "missing": false,
+      "fingerprintType": "LiveScanPlain",
+      "fingerType": "RightThumb",
+      "imageResolution": 500
+    }
+  ]
+}</pre>
+      </div>
+
+      <!-- Sección 4: Consultas para el Equipo de PIAC -->
+      <div class="questions-box">
+        <h3>4. Consultas Técnicas para el Equipo Administrador de PIAC</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          A fin de calibrar los parámetros y asegurar 100% de efectividad en las solicitudes de actas, agradeceríamos validar los siguientes puntos:
+        </p>
+
+        <div class="question-item">
+          <span class="question-num">1.</span>
+          <div class="question-title">Diagnóstico de la Excepción HTTP 500</div>
+          <div class="question-quote">
+            "En la transacción <strong>64b93669-87ea-4c6f-8d70-43e1c66257d3</strong> a las <strong>14:32:05</strong> el endpoint <code>/verify</code> arrojó HTTP 500 (<code>An error occurred. Try it again.</code>). ¿Podrían revisar en el Visor de Eventos de Windows o logs de Kestrel cuál fue la excepción exacta (Stack Trace) que produjo dicho fallo?"
+          </div>
+        </div>
+
+        <div class="question-item">
+          <span class="question-num">2.</span>
+          <div class="question-title">Umbral de Coincidencia (Matching Threshold)</div>
+          <div class="question-quote">
+            "En la transacción <strong>2917856a-2fed-4268-91b2-9bc906b0fe3f</strong> a las <strong>14:31:49</strong> la comparación fue exitosa pero retornó <code>Result: NotVerified</code> con un <code>Score: 28.0</code> (y en una prueba previa <code>35.0</code>). ¿Cuál es el valor de corte numérico (Score Threshold) configurado en el PIAC para que el veredicto sea emitido como <strong>Verified</strong>?"
+          </div>
+        </div>
+
+        <div class="question-item">
+          <span class="question-num">3.</span>
+          <div class="question-title">Nomenclatura del Campo de Identificación del Dedo (FingerType)</div>
+          <div class="question-quote">
+            "¿Para el parámetro <code>fingerType</code> esperan la cadena en formato texto (ej. <code>RightThumb</code>, <code>RightIndex</code>) o el código numérico estándar ANSI/NIST o ISO (ej. <code>1</code> para Pulgar Derecho)?"
+          </div>
+        </div>
+
+        <div class="question-item">
+          <span class="question-num">4.</span>
+          <div class="question-title">Disponibilidad de Muestras WSQ para Análisis</div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">
+            El sistema CompilaRC tiene almacenadas localmente las muestras WSQ de cada una de estas transacciones. Si requieren que les remitamos los archivos <code>.wsq</code> exactos para probarlos directamente en su entorno de laboratorio o verificar la densidad de minucias, están disponibles de inmediato.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div>
+        <strong>CompilaRC Desktop v1.0</strong> • Registro Civil CNE
+        <span style="display: block; font-size: 11px; color: #94a3b8; margin-top: 2px;">
+          Documento generado para fines de coordinación técnica y soporte interinstitucional.
+        </span>
+      </div>
+      <button class="print-btn" onclick="window.print()">
+        🖨 Imprimir / Guardar en PDF
+      </button>
+    </footer>
+  </div>
+
+</body>
+</html>

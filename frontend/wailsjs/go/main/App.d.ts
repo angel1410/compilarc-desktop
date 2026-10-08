@@ -4,18 +4,23 @@ import {biometric} from '../models';
 import {ac} from '../models';
 import {network} from '../models';
 import {storage} from '../models';
+import {main} from '../models';
 
 export function AplicarDeltaAC(arg1:string):Promise<Record<string, any>>;
 
-export function CapturarHuella(arg1:string):Promise<biometric.ResultadoHuella>;
+export function CapturarHuella(arg1:string,arg2:string):Promise<biometric.ResultadoHuella>;
+
+export function ConfigurarServidorURL(arg1:string):Promise<string>;
 
 export function ConsultarAC(arg1:string,arg2:number):Promise<ac.Ciudadano>;
 
 export function ForzarVerificacionRed():Promise<network.EstadoRed>;
 
-export function GuardarSolicitud(arg1:storage.SolicitudCertificacion):Promise<string>;
+export function GuardarSolicitud(arg1:storage.SolicitudCertificacion):Promise<main.ResultadoGuardarSolicitud>;
 
 export function ListarSolicitudesPendientes():Promise<Array<storage.SolicitudCertificacion>>;
+
+export function ObtenerConfigServidor():Promise<string>;
 
 export function ObtenerEstadisticasAC():Promise<Record<string, any>>;
 
@@ -24,3 +29,5 @@ export function ObtenerEstadoRed():Promise<network.EstadoRed>;
 export function ObtenerEstadoSensor():Promise<biometric.EstadoSensor>;
 
 export function SimularSincronizacionLote():Promise<Record<string, any>>;
+
+export function VerificarHuellaOnline(arg1:string,arg2:string,arg3:string):Promise<Record<string, any>>;

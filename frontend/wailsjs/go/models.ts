@@ -58,8 +58,10 @@ export namespace biometric {
 	    calidad: number;
 	    lfd_detectado: boolean;
 	    template_minucias_b64: string;
+	    sample_wsq: string;
 	    imagen_preview_b64: string;
 	    dedo_nombre: string;
+	    dedo: string;
 	    dispositivo_nombre: string;
 	    timestamp: string;
 	
@@ -73,10 +75,37 @@ export namespace biometric {
 	        this.calidad = source["calidad"];
 	        this.lfd_detectado = source["lfd_detectado"];
 	        this.template_minucias_b64 = source["template_minucias_b64"];
+	        this.sample_wsq = source["sample_wsq"];
 	        this.imagen_preview_b64 = source["imagen_preview_b64"];
 	        this.dedo_nombre = source["dedo_nombre"];
+	        this.dedo = source["dedo"];
 	        this.dispositivo_nombre = source["dispositivo_nombre"];
 	        this.timestamp = source["timestamp"];
+	    }
+	}
+
+}
+
+export namespace main {
+	
+	export class ResultadoGuardarSolicitud {
+	    id: string;
+	    transmitido: boolean;
+	    modo: string;
+	    co_solicitud?: number;
+	    mensaje: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ResultadoGuardarSolicitud(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.transmitido = source["transmitido"];
+	        this.modo = source["modo"];
+	        this.co_solicitud = source["co_solicitud"];
+	        this.mensaje = source["mensaje"];
 	    }
 	}
 

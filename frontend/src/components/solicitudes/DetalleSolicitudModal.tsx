@@ -57,7 +57,7 @@ export const DetalleSolicitudModal: React.FC<Props> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-slate-800">
         {/* Encabezado del Modal */}
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-900 to-[#0f2a66] text-white flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 bg-linear-to-r from-blue-900 to-brand-primary text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-blue-200 shrink-0">
               <Code className="w-5 h-5" />
